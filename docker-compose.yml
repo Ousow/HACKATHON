@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+
+  # NAMENODE 
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    restart: always
+    ports:
+      - "9870:9870"   # Interface web HDFS  → http://localhost:9870
+      - "9000:9000"   # Port HDFS interne
+    environment:
+      - CLUSTER_NAME=hackathon-datalake
+    env_file:
+      - .env
+    volumes:
+      - namenode_data:/hadoop/dfs/name
+    networks:
+      - hadoop-net
+
+  # DATANODE 
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode
+    restart: always
+    ports:
+    - "9864:9864"
+    depends_on:
+      - namenode
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    env_file:
+      - .env
+    volumes:
+      - datanode_data:/hadoop/dfs/data
+    networks:
+      - hadoop-net
+
+volumes:
+  namenode_data:
+  datanode_data:
+
+networks:
+  hadoop-net:
+    driver: bridge
