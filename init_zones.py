@@ -1,29 +1,34 @@
 """
-Création des 3 zones du Data Lake dans HDFS
+Création des 3 zones du Data Lake dans MinIO (buckets S3)
 """
 
-from hdfs import InsecureClient
+from minio import Minio
 
-# Connexion au NameNode via WebHDFS 
-HDFS_URL = "http://localhost:9870"
-client = InsecureClient(HDFS_URL, user="root")
+# Connexion à MinIO
+client = Minio(
+    "localhost:9000",
+    access_key="minioadmin",
+    secret_key="minioadmin",
+    secure=False,
+)
 
-#  Définition des zones
-ZONES = {
-    "raw":      "/datalake/raw",       # Documents bruts (PDF, images)
-    "clean":    "/datalake/clean",     # Texte extrait par l'OCR
-    "curated":  "/datalake/curated",   # Données structurées JSON validées
-}
+# Les 3 zones = 3 buckets MinIO
+ZONES = [
+    "raw",      # Documents bruts (PDF, images)
+    "clean",    # Texte extrait par l'OCR
+    "curated",  # Données structurées JSON validées
+]
 
 def init_zones():
-    print(" Initialisation du Data Lake HDFS...\n")
-    for zone_name, zone_path in ZONES.items():
-        if not client.status(zone_path, strict=False):
-            client.makedirs(zone_path)
-            print(f"  Zone créée : {zone_path}")
+    print(" Initialisation du Data Lake MinIO...\n")
+    for zone in ZONES:
+        if not client.bucket_exists(zone):
+            client.make_bucket(zone)
+            print(f"  Bucket créé : {zone}")
         else:
-            print(f"   Zone déjà existante : {zone_path}")
-    print("\n  Data Lake prêt !")
+            print(f"   Bucket déjà existant : {zone}")
+    print("\n  Data Lake prêt ! Interface web : http://localhost:9001")
+    print("  Login : minioadmin / minioadmin")
 
 if __name__ == "__main__":
     init_zones()

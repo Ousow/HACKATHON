@@ -1,46 +1,25 @@
-version: "3.8"
-
 services:
 
-  # NAMENODE 
-  namenode:
-    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
-    container_name: namenode
+  # MINIO – Data Lake compatible toutes architectures (ARM + x86)
+  minio:
+    image: minio/minio:latest
+    container_name: minio
     restart: always
     ports:
-      - "9870:9870"   # Interface web HDFS  → http://localhost:9870
-      - "9000:9000"   # Port HDFS interne
+      - "9000:9000"   # API S3
+      - "9001:9001"   # Interface web → http://localhost:9001
     environment:
-      - CLUSTER_NAME=hackathon-datalake
-    env_file:
-      - .env
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
     volumes:
-      - namenode_data:/hadoop/dfs/name
+      - minio_data:/data
     networks:
-      - hadoop-net
-
-  # DATANODE 
-  datanode:
-    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
-    container_name: datanode
-    restart: always
-    ports:
-    - "9864:9864"
-    depends_on:
-      - namenode
-    environment:
-      SERVICE_PRECONDITION: "namenode:9870"
-    env_file:
-      - .env
-    volumes:
-      - datanode_data:/hadoop/dfs/data
-    networks:
-      - hadoop-net
+      - datalake-net
 
 volumes:
-  namenode_data:
-  datanode_data:
+  minio_data:
 
 networks:
-  hadoop-net:
+  datalake-net:
     driver: bridge

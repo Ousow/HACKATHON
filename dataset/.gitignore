@@ -1,0 +1,14 @@
+# Fichiers générés (trop lourds pour Git)
+output/train/
+output/test/
+output/labels/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# OS
+.DS_Store
+Thumbs.db
