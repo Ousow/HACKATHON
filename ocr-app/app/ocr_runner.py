@@ -69,12 +69,13 @@ def run_ocr(input_file_path: str) -> None:
         print(f"Erreur pendant le traitement OCR : {e}")
         return
 
-    output_text_path = output_dir / f"{input_path.stem}_ocr.txt"
+    parent_name = input_path.parent.name
+    output_text_path = output_dir / f"{parent_name}_{input_path.stem}_ocr.txt"
     output_text_path.write_text(text, encoding="utf-8")
 
     extracted_json = extract_fields(text=text, document_name=input_path.name)
 
-    output_json_path = output_dir / f"{input_path.stem}_structured.json"
+    output_json_path = output_dir / f"{parent_name}_{input_path.stem}_structured.json"
     output_json_path.write_text(
         json.dumps(extracted_json, ensure_ascii=False, indent=2),
         encoding="utf-8"
