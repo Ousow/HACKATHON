@@ -1,0 +1,9 @@
+# Pipeline requirements
+httpx>=0.26.0
+minio>=7.2.0
+
+# OCR dependencies (pour --real-ocr)
+pytesseract>=0.3.10
+pdf2image>=1.16.0
+pillow>=10.0.0
+opencv-python-headless>=4.8.0

@@ -196,6 +196,46 @@ def extract_tva(text: str) -> Dict[str, Any]:
     }
 
 
+def extract_iban_bic(text: str) -> Dict[str, Dict[str, Any]]:
+    """
+    Extrait l'IBAN et le BIC d'un texte.
+    IBAN français: FR76 + 23 caractères alphanumériques
+    BIC: 8 ou 11 caractères
+    """
+    results = {
+        "iban": {"value": None, "confidence": 0.0, "source": None},
+        "bic": {"value": None, "confidence": 0.0, "source": None},
+    }
+
+    # IBAN français: FR + 2 chiffres + 23 caractères
+    iban_pattern = r"\b(FR\d{2}\s*[\dA-Z]{4}\s*[\dA-Z]{4}\s*[\dA-Z]{4}\s*[\dA-Z]{4}\s*[\dA-Z]{4}\s*[\dA-Z]{3})\b"
+    iban_matches = re.findall(iban_pattern, text, flags=re.IGNORECASE)
+    
+    if iban_matches:
+        # Nettoyer l'IBAN (enlever espaces)
+        iban_clean = re.sub(r"\s+", "", iban_matches[0]).upper()
+        results["iban"] = {
+            "value": iban_clean,
+            "all_candidates": [re.sub(r"\s+", "", m).upper() for m in iban_matches],
+            "confidence": 0.90,
+            "source": "regex"
+        }
+
+    # BIC: 8 ou 11 caractères alphanumériques
+    bic_pattern = r"\bBIC\s*[:\-]?\s*([A-Z]{4}[A-Z]{2}[A-Z\d]{2}(?:[A-Z\d]{3})?)\b"
+    bic_matches = re.findall(bic_pattern, text, flags=re.IGNORECASE)
+    
+    if bic_matches:
+        results["bic"] = {
+            "value": bic_matches[0].upper(),
+            "all_candidates": [m.upper() for m in bic_matches],
+            "confidence": 0.88,
+            "source": "regex"
+        }
+
+    return results
+
+
 def extract_amount_by_labels(text: str) -> Dict[str, Dict[str, Any]]:
     """
     Cherche des montants proches de labels : HT, TTC, TVA.
@@ -348,6 +388,7 @@ def extract_fields(text: str, document_name: str = "") -> Dict[str, Any]:
     tva = extract_tva(normalized_text)
     amounts = extract_amount_by_labels(normalized_text)
     dates = extract_dates(normalized_text)
+    bank = extract_iban_bic(normalized_text)
 
     fields = {
         "siret": siret,
@@ -357,6 +398,8 @@ def extract_fields(text: str, document_name: str = "") -> Dict[str, Any]:
         "montant_tva": amounts["montant_tva"],
         "date_emission": dates["date_emission"],
         "date_expiration": dates["date_expiration"],
+        "iban": bank["iban"],
+        "bic": bank["bic"],
     }
 
     warnings = build_warnings(doc_type, fields)
