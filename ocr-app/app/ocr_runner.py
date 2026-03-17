@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 import sys
 
 from PIL import Image
@@ -6,6 +7,7 @@ import pytesseract
 from pdf2image import convert_from_path
 
 from preprocessing import preprocess_pil_image, preprocess_pdf_page_for_ocr
+from field_extractor import extract_fields
 
 
 def extract_text_from_image(image_path: Path) -> str:
@@ -57,10 +59,8 @@ def run_ocr(input_file_path: str) -> None:
     try:
         if suffix in [".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".webp"]:
             text = extract_text_from_image(input_path)
-
         elif suffix == ".pdf":
             text = extract_text_from_pdf(input_path)
-
         else:
             print(f"Erreur : format non supporté -> {suffix}")
             return
@@ -72,9 +72,22 @@ def run_ocr(input_file_path: str) -> None:
     output_text_path = output_dir / f"{input_path.stem}_ocr.txt"
     output_text_path.write_text(text, encoding="utf-8")
 
+    extracted_json = extract_fields(text=text, document_name=input_path.name)
+
+    output_json_path = output_dir / f"{input_path.stem}_structured.json"
+    output_json_path.write_text(
+        json.dumps(extracted_json, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+
     print("=== TEXTE OCR ===")
-    print(text[:3000])
-    print(f"\nRésultat enregistré dans : {output_text_path}")
+    print(text[:2000])
+
+    print("\n=== JSON EXTRAIT ===")
+    print(json.dumps(extracted_json, ensure_ascii=False, indent=2))
+
+    print(f"\nTexte OCR enregistré dans : {output_text_path}")
+    print(f"JSON structuré enregistré dans : {output_json_path}")
 
 
 if __name__ == "__main__":
