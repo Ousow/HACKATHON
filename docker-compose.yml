@@ -17,6 +17,19 @@ services:
     networks:
       - datalake-net
 
+  # OCR
+  ocr-service:
+    container_name: ocr-service
+    restart: always
+    build:
+      context: /ocr-app
+      dockerfile: Dockerfile
+    command: ["sleep", "infinity"]
+    volumes:
+      - .:/app
+    networks:
+      - datalake-net
+
 volumes:
   minio_data:
 
