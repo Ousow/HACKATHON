@@ -1,8 +1,4 @@
-# Validation Service - Module de Détection d'Incohérences
 
-> **Étudiant 5 - M2 | Hackathon 2026**
-
-Service de validation intelligente pour la détection d'anomalies dans les documents administratifs (factures, attestations URSSAF, Kbis, RIB, devis).
 
 ## 🎯 Fonctionnalités
 
