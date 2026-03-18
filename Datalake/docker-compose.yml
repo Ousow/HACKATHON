@@ -1,0 +1,84 @@
+services:
+
+  # MINIO – Data Lake compatible toutes architectures (ARM + x86)
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: always
+    ports:
+      - "9000:9000"   # API S3
+      - "9001:9001"   # Interface web → http://localhost:9001
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - datalake-net
+
+  # OCR
+  ocr-service:
+    container_name: ocr-service
+    restart: always
+    build:
+      context: ./ocr-app
+      dockerfile: Dockerfile
+    command: ["sleep", "infinity"]
+    volumes:
+      - .:/app
+    networks:
+      - datalake-net
+
+  # VALIDATION - Détection d'incohérences (Étudiant 5)
+  validation-service:
+    container_name: validation-service
+    restart: always
+    build:
+      context: ./validation-service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"   # API REST → http://localhost:8001
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=INFO
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_USER=minioadmin
+      - MINIO_PASSWORD=minioadmin
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - datalake-net
+    depends_on:
+      - minio
+
+  # PIPELINE - Orchestration simple (pour tests)
+  pipeline:
+    container_name: pipeline
+    build:
+      context: .
+      dockerfile: Dockerfile.pipeline
+    environment:
+      - VALIDATION_SERVICE_URL=http://validation-service:8001
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_USER=minioadmin
+      - MINIO_PASSWORD=minioadmin
+    volumes:
+      - ./dataset/output:/app/dataset/output:ro
+    networks:
+      - datalake-net
+    depends_on:
+      validation-service:
+        condition: service_healthy
+    profiles:
+      - pipeline  # Lancé uniquement avec: docker-compose --profile pipeline up
+
+volumes:
+  minio_data:
+
+networks:
+  datalake-net:
+    driver: bridge
