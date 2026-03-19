@@ -1,0 +1,38 @@
+[2026-03-19T08:29:56.577+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2026-03-19T08:29:56.633+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: hackathon_pipeline_datalake.detect_new_file_in_raw scheduled__2026-03-19T08:20:00+00:00 [queued]>
+[2026-03-19T08:29:56.649+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: hackathon_pipeline_datalake.detect_new_file_in_raw scheduled__2026-03-19T08:20:00+00:00 [queued]>
+[2026-03-19T08:29:56.650+0000] {taskinstance.py:2306} INFO - Starting attempt 2 of 3
+[2026-03-19T08:29:56.674+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): detect_new_file_in_raw> on 2026-03-19 08:20:00+00:00
+[2026-03-19T08:29:56.686+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'hackathon_pipeline_datalake', 'detect_new_file_in_raw', 'scheduled__2026-03-19T08:20:00+00:00', '--job-id', '12', '--raw', '--subdir', 'DAGS_FOLDER/pipeline_dag.py', '--cfg-path', '/tmp/tmplchb4cxc']
+[2026-03-19T08:29:56.692+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:61 DeprecationWarning: This process (pid=443) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2026-03-19T08:29:56.693+0000] {standard_task_runner.py:91} INFO - Job 12: Subtask detect_new_file_in_raw
+[2026-03-19T08:29:56.694+0000] {standard_task_runner.py:63} INFO - Started process 444 to run task
+[2026-03-19T08:29:56.860+0000] {task_command.py:426} INFO - Running <TaskInstance: hackathon_pipeline_datalake.detect_new_file_in_raw scheduled__2026-03-19T08:20:00+00:00 [running]> on host ecb3bba3bee7
+[2026-03-19T08:29:57.043+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='data-team' AIRFLOW_CTX_DAG_ID='hackathon_pipeline_datalake' AIRFLOW_CTX_TASK_ID='detect_new_file_in_raw' AIRFLOW_CTX_EXECUTION_DATE='2026-03-19T08:20:00+00:00' AIRFLOW_CTX_TRY_NUMBER='2' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2026-03-19T08:20:00+00:00'
+[2026-03-19T08:29:57.044+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2026-03-19T08:29:57.559+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2026-03-19T08:29:57.560+0000] {taskinstance.py:2905} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 465, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 432, in _execute_callable
+    return execute_callable(context=context, **execute_callable_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 400, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 235, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 252, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/pipeline_dag.py", line 130, in detect_new_file_in_raw
+    raise ValueError(
+ValueError: Aucun nouveau fichier dans MinIO bucket 'raw'. Uploadez un PDF avec : python Datalake/upload_raw.py <fichier.pdf>
+[2026-03-19T08:29:57.587+0000] {taskinstance.py:1206} INFO - Marking task as UP_FOR_RETRY. dag_id=hackathon_pipeline_datalake, task_id=detect_new_file_in_raw, run_id=scheduled__2026-03-19T08:20:00+00:00, execution_date=20260319T082000, start_date=20260319T082956, end_date=20260319T082957
+[2026-03-19T08:29:57.617+0000] {standard_task_runner.py:110} ERROR - Failed to execute job 12 for task detect_new_file_in_raw (Aucun nouveau fichier dans MinIO bucket 'raw'. Uploadez un PDF avec : python Datalake/upload_raw.py <fichier.pdf>; 444)
+[2026-03-19T08:29:57.633+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 1
+[2026-03-19T08:29:57.696+0000] {taskinstance.py:3498} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2026-03-19T08:29:57.702+0000] {local_task_job_runner.py:222} INFO - ::endgroup::
