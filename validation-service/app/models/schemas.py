@@ -235,8 +235,8 @@ class AnomalieDetectee(BaseModel):
     documents_concernes: List[str] = Field(default_factory=list)
     confiance: float = Field(ge=0.0, le=1.0, default=1.0)
     
-    # Pour le ML
-    score_anomalie: Optional[float] = None  # Score du modèle ML si applicable
+    
+    score_anomalie: Optional[float] = None  
     
     class Config:
         use_enum_values = True

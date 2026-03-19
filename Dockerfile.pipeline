@@ -1,19 +1,19 @@
-# Dockerfile pour le service de pipeline/orchestration
+
 
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Installer les dépendances
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copier le script pipeline
+
 COPY pipeline.py .
 
-# Variables d'environnement par défaut
+
 ENV VALIDATION_SERVICE_URL=http://validation-service:8001
 ENV MINIO_ENDPOINT=minio:9000
 
-# Commande par défaut
+
 CMD ["python", "pipeline.py", "--scenario", "10"]
