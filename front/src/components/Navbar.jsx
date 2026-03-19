@@ -4,7 +4,7 @@ export default function Navbar() {
   return (
     <nav style={styles.nav}>
       <div style={styles.container}>
-        <h1 style={styles.title}>Hackathon — Gestion documentaire</h1>
+        <h1 style={styles.title}>Hackathon - Gestion documentaire</h1>
 
         <div style={styles.links}>
           <Link to="/" style={styles.link}>

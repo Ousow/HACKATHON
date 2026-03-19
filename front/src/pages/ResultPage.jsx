@@ -1,28 +1,37 @@
-import { Link, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  Building2, Receipt, Euro, BadgeDollarSign, BarChart2,
+  CalendarDays, CalendarClock, Landmark, KeyRound,
+  FileQuestion, AlertTriangle, Search, Wrench, ArrowLeft,
+  FolderOpen, CheckCircle, XCircle, Send,
+} from "lucide-react";
+import { styles } from "./ResultPage.styles";
 
-// ── helpers ──────────────────────────────────────────────────────────────────
-
+// ~~correspondance champ -> label + icone
 const FIELD_LABELS = {
-  siret:         { label: "SIRET",            icon: "🏢" },
-  tva:           { label: "TVA intracommunautaire", icon: "🧾" },
-  montant_ht:    { label: "Montant HT",       icon: "💶" },
-  montant_ttc:   { label: "Montant TTC",      icon: "💰" },
-  montant_tva:   { label: "Montant TVA",      icon: "📊" },
-  date_emission: { label: "Date d'émission",  icon: "📅" },
-  date_expiration:{ label: "Date d'expiration", icon: "⏳" },
-  iban:          { label: "IBAN",             icon: "🏦" },
-  bic:           { label: "BIC",              icon: "🔑" },
+  siret:           { label: "SIRET",                 Icon: Building2 },
+  tva:             { label: "TVA intracommunautaire", Icon: Receipt },
+  montant_ht:      { label: "Montant HT",            Icon: Euro },
+  montant_ttc:     { label: "Montant TTC",           Icon: BadgeDollarSign },
+  montant_tva:     { label: "Montant TVA",           Icon: BarChart2 },
+  date_emission:   { label: "Date d'emission",       Icon: CalendarDays },
+  date_expiration: { label: "Date d'expiration",     Icon: CalendarClock },
+  iban:            { label: "IBAN",                  Icon: Landmark },
+  bic:             { label: "BIC",                   Icon: KeyRound },
 };
 
+// ~~correspondance type de document -> label lisible
 const DOC_TYPE_LABELS = {
-  facture:       "Facture",
-  devis:         "Devis",
-  attestation:   "Attestation",
+  facture:         "Facture",
+  devis:           "Devis",
+  attestation:     "Attestation",
   bon_de_commande: "Bon de commande",
-  rib:           "RIB",
-  inconnu:       "Type inconnu",
+  rib:             "RIB",
+  inconnu:         "Type inconnu",
 };
 
+// ~~badge de confiance colore selon le pourcentage
 function confidenceBadge(confidence) {
   if (confidence == null) return null;
   const pct = Math.round(confidence * 100);
@@ -34,47 +43,191 @@ function confidenceBadge(confidence) {
   );
 }
 
-function FieldRow({ name, field }) {
-  const meta = FIELD_LABELS[name] || { label: name, icon: "•" };
-  const hasValue = field?.value != null;
-
-  const displayValue = () => {
-    if (!hasValue) return <em style={{ color: "#9ca3af" }}>Non détecté</em>;
-    const v = field.value;
-    if (typeof v === "number") return `${v.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €`;
-    return String(v);
-  };
+// ~~ligne du formulaire : input editable avec icone et label
+function FieldInput({ name, field, value, onChange }) {
+  const meta = FIELD_LABELS[name] || { label: name, Icon: FileQuestion };
+  const { Icon } = meta;
 
   return (
     <div style={styles.fieldRow}>
-      <span style={styles.fieldIcon}>{meta.icon}</span>
+      <Icon size={18} strokeWidth={1.8} style={styles.fieldIcon} />
       <div style={styles.fieldBody}>
-        <span style={styles.fieldLabel}>{meta.label}</span>
-        <span style={{ ...styles.fieldValue, opacity: hasValue ? 1 : 0.5 }}>
-          {displayValue()}
-        </span>
+        <label style={styles.fieldLabel}>{meta.label}</label>
+        <input
+          style={styles.fieldInput}
+          type="text"
+          value={value ?? ""}
+          placeholder="Non detecte"
+          onChange={(e) => onChange(name, e.target.value)}
+        />
       </div>
-      {hasValue && confidenceBadge(field.confidence)}
+      {field?.confidence > 0 && confidenceBadge(field.confidence)}
     </div>
   );
 }
 
-// ── page ─────────────────────────────────────────────────────────────────────
+// ~~construction du DossierFournisseur selon le type de document
+function buildDossier(docType, formValues, fileName) {
+  const dossierId = `DOSSIER-${Date.now()}`;
+  const base = {
+    fichier_source: fileName || "document.pdf",
+    confiance_ocr: 0.85,
+  };
 
+  const toFloat = (v) => parseFloat(v) || 0;
+  const toDate  = (v) => v || new Date().toISOString().split("T")[0];
+
+  if (docType === "facture") {
+    return {
+      dossier_id: dossierId,
+      facture: {
+        ...base,
+        type_document: "facture",
+        numero_facture: `FAC-${Date.now()}`,
+        siret_emetteur: formValues.siret || "00000000000000",
+        tva_intracommunautaire: formValues.tva || null,
+        montant_ht:  toFloat(formValues.montant_ht),
+        taux_tva:    0.20,
+        montant_tva: toFloat(formValues.montant_tva),
+        montant_ttc: toFloat(formValues.montant_ttc),
+        date_emission: toDate(formValues.date_emission),
+        date_echeance: formValues.date_expiration || null,
+        iban: formValues.iban || null,
+        bic:  formValues.bic  || null,
+      },
+    };
+  }
+
+  if (docType === "devis") {
+    return {
+      dossier_id: dossierId,
+      devis: {
+        ...base,
+        type_document: "devis",
+        numero_devis: `DEV-${Date.now()}`,
+        siret_emetteur: formValues.siret || "00000000000000",
+        montant_ht:  toFloat(formValues.montant_ht),
+        taux_tva:    0.20,
+        montant_tva: toFloat(formValues.montant_tva),
+        montant_ttc: toFloat(formValues.montant_ttc),
+        date_emission: toDate(formValues.date_emission),
+        date_validite: formValues.date_expiration || null,
+      },
+    };
+  }
+
+  if (docType === "rib") {
+    return {
+      dossier_id: dossierId,
+      rib: {
+        ...base,
+        type_document: "rib",
+        iban:      formValues.iban || "",
+        bic:       formValues.bic  || "",
+        titulaire: fileName || "Inconnu",
+        siret:     formValues.siret || null,
+      },
+    };
+  }
+
+  // ~~fallback : on envoie une facture avec ce qu on a
+  return {
+    dossier_id: dossierId,
+    facture: {
+      ...base,
+      type_document: "facture",
+      numero_facture: `DOC-${Date.now()}`,
+      siret_emetteur: formValues.siret || "00000000000000",
+      montant_ht:  toFloat(formValues.montant_ht),
+      taux_tva:    0.20,
+      montant_tva: toFloat(formValues.montant_tva),
+      montant_ttc: toFloat(formValues.montant_ttc),
+      date_emission: toDate(formValues.date_emission),
+    },
+  };
+}
+
+// ~~affichage du resultat de validation
+function ValidationResult({ result }) {
+  const isValid = result.est_valide;
+  const color   = isValid ? "#16a34a" : "#dc2626";
+  const bg      = isValid ? "#f0fdf4" : "#fef2f2";
+  const border  = isValid ? "#bbf7d0" : "#fecaca";
+
+  return (
+    <div style={{ ...styles.validationBox, backgroundColor: bg, border: `1px solid ${border}` }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+        {isValid
+          ? <CheckCircle size={22} color={color} />
+          : <XCircle    size={22} color={color} />
+        }
+        <strong style={{ color, fontSize: "1rem" }}>
+          {isValid ? "Dossier valide" : "Anomalies detectees"}
+        </strong>
+        <span style={{ ...styles.badge, backgroundColor: color + "18", color, marginLeft: "auto" }}>
+          Score : {Math.round(result.score_confiance * 100)}%
+        </span>
+      </div>
+
+      {result.anomalies?.length > 0 && (
+        <ul style={styles.anomalieList}>
+          {result.anomalies.map((a, i) => (
+            <li key={i} style={styles.anomalieItem}>
+              <span style={{
+                ...styles.gravityBadge,
+                backgroundColor:
+                  a.gravite === "critical" ? "#fee2e2" :
+                  a.gravite === "error"    ? "#ffedd5" :
+                  a.gravite === "warning"  ? "#fefce8" : "#f0f9ff",
+                color:
+                  a.gravite === "critical" ? "#991b1b" :
+                  a.gravite === "error"    ? "#9a3412" :
+                  a.gravite === "warning"  ? "#854d0e" : "#0369a1",
+              }}>
+                {a.gravite}
+              </span>
+              {a.message}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+// ~~page principale
 export default function ResultPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const result   = location.state?.result;
   const fileName = location.state?.fileName;
 
+  // ~~initialisation du formulaire avec les valeurs extraites par l OCR
+  const initFormValues = (fields) => {
+    const vals = {};
+    Object.entries(fields || {}).forEach(([key, field]) => {
+      vals[key] = field?.value != null ? String(field.value) : "";
+    });
+    return vals;
+  };
+
+  const [formValues,       setFormValues]       = useState(() => initFormValues(result?.fields));
+  const [validating,       setValidating]       = useState(false);
+  const [validationResult, setValidationResult] = useState(null);
+  const [validationError,  setValidationError]  = useState("");
+
+  // ~~cas ou on arrive directement sur /result sans donnees
   if (!result) {
     return (
       <div style={styles.emptyCard}>
-        <p style={{ fontSize: "2.5rem", margin: 0 }}>📂</p>
-        <h2 style={{ marginTop: 8 }}>Aucun résultat disponible</h2>
+        <FolderOpen size={40} strokeWidth={1.5} style={{ color: "#9ca3af" }} />
+        <h2 style={{ marginTop: 8 }}>Aucun resultat disponible</h2>
         <p style={{ color: "#6b7280", marginBottom: 24 }}>
           Commencez par envoyer un document depuis la page d'upload.
         </p>
-        <Link to="/" style={styles.backBtn}>← Retour à l'upload</Link>
+        <Link to="/" style={styles.backBtn}>
+          <ArrowLeft size={16} /> Retour a l'upload
+        </Link>
       </div>
     );
   }
@@ -82,203 +235,130 @@ export default function ResultPage() {
   const { document_type_guess, fields, warnings, extracted_text_preview } = result;
   const docLabel = DOC_TYPE_LABELS[document_type_guess] ?? document_type_guess;
 
+  const handleFieldChange = (name, value) => {
+    setFormValues((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // ~~envoi du dossier au service de validation
+  const handleValidate = async () => {
+    setValidating(true);
+    setValidationError("");
+    setValidationResult(null);
+
+    try {
+      const dossier = buildDossier(document_type_guess, formValues, fileName);
+
+      const response = await fetch("http://localhost:8001/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dossier, use_ml: true }),
+      });
+
+      if (!response.ok) {
+        const err = await response.text();
+        throw new Error(`Erreur validation (${response.status}) : ${err}`);
+      }
+
+      const data = await response.json();
+      setValidationResult(data);
+
+    } catch (err) {
+      setValidationError(err.message || "Erreur inconnue.");
+    } finally {
+      setValidating(false);
+    }
+  };
+
   return (
     <div style={styles.wrapper}>
 
-      {/* ── Header ── */}
+      {/* header */}
       <div style={styles.header}>
         <div>
-          <h2 style={styles.title}>Résultat de l'extraction</h2>
-          <p style={styles.fileChip}>📄 {fileName || "Fichier inconnu"}</p>
+          <h2 style={styles.title}>Resultat de l'extraction</h2>
+          <p style={styles.fileChip}>{fileName || "Fichier inconnu"}</p>
         </div>
         <span style={styles.docTypeBadge}>{docLabel}</span>
       </div>
 
-      {/* ── Warnings ── */}
+      {/* avertissements OCR */}
       {warnings?.length > 0 && (
         <div style={styles.warningBox}>
-          <strong>⚠️ Avertissements</strong>
+          <strong style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <AlertTriangle size={16} /> Avertissements
+          </strong>
           <ul style={styles.warningList}>
             {warnings.map((w, i) => <li key={i}>{w}</li>)}
           </ul>
         </div>
       )}
 
-      {/* ── Fields grid ── */}
+      {/* formulaire des champs extraits */}
       <div style={styles.card}>
-        <h3 style={styles.sectionTitle}>Champs extraits</h3>
+        <h3 style={styles.sectionTitle}>Champs extraits — corrigez si necessaire</h3>
         <div style={styles.fieldGrid}>
           {Object.entries(fields || {}).map(([name, field]) => (
-            <FieldRow key={name} name={name} field={field} />
+            <FieldInput
+              key={name}
+              name={name}
+              field={field}
+              value={formValues[name]}
+              onChange={handleFieldChange}
+            />
           ))}
         </div>
+
+        {/* bouton de validation */}
+        <button
+          onClick={handleValidate}
+          disabled={validating}
+          style={{
+            ...styles.validateBtn,
+            opacity: validating ? 0.6 : 1,
+            cursor:  validating ? "not-allowed" : "pointer",
+            marginTop: "24px",
+          }}
+        >
+          <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+            <Send size={16} />
+            {validating ? "Validation en cours..." : "Valider le document"}
+          </span>
+        </button>
+
+        {/* erreur de validation */}
+        {validationError && (
+          <div style={{ ...styles.warningBox, marginTop: "16px" }}>
+            <AlertTriangle size={16} /> {validationError}
+          </div>
+        )}
       </div>
 
-      {/* ── Raw text preview ── */}
+      {/* resultat de la validation */}
+      {validationResult && <ValidationResult result={validationResult} />}
+
+      {/* apercu OCR brut */}
       {extracted_text_preview && (
         <details style={styles.details}>
-          <summary style={styles.summary}>🔍 Aperçu du texte OCR brut</summary>
+          <summary style={styles.summary}>
+            <Search size={14} style={{ marginRight: "6px" }} />
+            Apercu du texte OCR brut
+          </summary>
           <pre style={styles.pre}>{extracted_text_preview}</pre>
         </details>
       )}
 
-      {/* ── Raw JSON ── */}
+      {/* json debug */}
       <details style={styles.details}>
-        <summary style={styles.summary}>⚙️ JSON complet (debug)</summary>
+        <summary style={styles.summary}>
+          <Wrench size={14} style={{ marginRight: "6px" }} />
+          JSON complet (debug)
+        </summary>
         <pre style={styles.pre}>{JSON.stringify(result, null, 2)}</pre>
       </details>
 
-      <Link to="/" style={styles.backBtn}>← Nouveau document</Link>
+      <Link to="/" style={styles.backBtn}>
+        <ArrowLeft size={16} /> Nouveau document
+      </Link>
     </div>
   );
 }
-
-// ── styles ────────────────────────────────────────────────────────────────────
-
-const styles = {
-  wrapper: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "20px",
-    paddingTop: "20px",
-    paddingBottom: "40px",
-  },
-  header: {
-    display: "flex",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    flexWrap: "wrap",
-    gap: "12px",
-  },
-  title: {
-    margin: 0,
-    fontSize: "1.5rem",
-    color: "#111827",
-  },
-  fileChip: {
-    margin: "6px 0 0",
-    color: "#4b5563",
-    fontSize: "0.9rem",
-  },
-  docTypeBadge: {
-    backgroundColor: "#dbeafe",
-    color: "#1d4ed8",
-    padding: "6px 14px",
-    borderRadius: "9999px",
-    fontWeight: "700",
-    fontSize: "0.85rem",
-    whiteSpace: "nowrap",
-    alignSelf: "center",
-  },
-  warningBox: {
-    backgroundColor: "#fffbeb",
-    border: "1px solid #fcd34d",
-    borderRadius: "12px",
-    padding: "16px 20px",
-    color: "#92400e",
-    fontSize: "0.9rem",
-  },
-  warningList: {
-    margin: "8px 0 0",
-    paddingLeft: "20px",
-  },
-  card: {
-    backgroundColor: "white",
-    borderRadius: "16px",
-    padding: "28px",
-    boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
-  },
-  sectionTitle: {
-    margin: "0 0 20px",
-    fontSize: "1rem",
-    color: "#374151",
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: "0.05em",
-  },
-  fieldGrid: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
-  },
-  fieldRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: "14px",
-    padding: "12px 14px",
-    borderRadius: "10px",
-    transition: "background 0.15s",
-    cursor: "default",
-    ":hover": { backgroundColor: "#f9fafb" },
-  },
-  fieldIcon: {
-    fontSize: "1.2rem",
-    width: "26px",
-    textAlign: "center",
-    flexShrink: 0,
-  },
-  fieldBody: {
-    flex: 1,
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flexWrap: "wrap",
-    gap: "4px",
-  },
-  fieldLabel: {
-    fontSize: "0.85rem",
-    color: "#6b7280",
-    fontWeight: "500",
-  },
-  fieldValue: {
-    fontSize: "0.95rem",
-    color: "#111827",
-    fontWeight: "600",
-    textAlign: "right",
-  },
-  badge: {
-    fontSize: "0.75rem",
-    fontWeight: "700",
-    padding: "2px 8px",
-    borderRadius: "9999px",
-    flexShrink: 0,
-  },
-  details: {
-    backgroundColor: "white",
-    borderRadius: "16px",
-    padding: "16px 24px",
-    boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
-  },
-  summary: {
-    cursor: "pointer",
-    fontWeight: "600",
-    color: "#374151",
-    fontSize: "0.9rem",
-  },
-  pre: {
-    marginTop: "16px",
-    backgroundColor: "#0f172a",
-    color: "#e2e8f0",
-    padding: "16px",
-    borderRadius: "10px",
-    overflowX: "auto",
-    fontSize: "0.8rem",
-    lineHeight: "1.6",
-  },
-  emptyCard: {
-    backgroundColor: "white",
-    borderRadius: "16px",
-    padding: "48px 32px",
-    boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
-    textAlign: "center",
-    maxWidth: "480px",
-    margin: "40px auto",
-  },
-  backBtn: {
-    display: "inline-block",
-    color: "#2563eb",
-    fontWeight: "700",
-    textDecoration: "none",
-    fontSize: "0.95rem",
-  },
-};
