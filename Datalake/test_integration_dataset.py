@@ -29,7 +29,7 @@ MINIO_ENDPOINT  = "localhost:9000"
 MINIO_USER      = "minioadmin"
 MINIO_PASSWORD  = "minioadmin"
 
-DATASET_DIR = Path(r"C:\Users\chaou\Downloads\hackathon_dataset\output")
+DATASET_DIR = Path(r"C:\Users\oumis\Desktop\HACKATHON\dataset\output")
 LABELS_DIR  = DATASET_DIR / "labels"
 
 TODAY = datetime.today().strftime("%Y-%m-%d")

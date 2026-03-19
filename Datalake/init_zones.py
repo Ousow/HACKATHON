@@ -6,7 +6,7 @@ from minio import Minio
 
 # Connexion à MinIO
 client = Minio(
-    "localhost:9000",
+    "minio:9000",
     access_key="minioadmin",
     secret_key="minioadmin",
     secure=False,

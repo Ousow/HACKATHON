@@ -95,19 +95,17 @@ services:
     <<: *airflow-common
     container_name: airflow_scheduler
     restart: always
-    # Installe les dépendances du pipeline au démarrage
     entrypoint: /bin/bash
     command:
       - -c
       - |
         pip install --quiet minio httpx pytesseract pdf2image pillow opencv-python-headless
-        pip install --quiet -r /app/requirements.txt 2>/dev/null || true
         pip install --quiet -r /app/validation-service/requirements.txt 2>/dev/null || true
         airflow scheduler
 
   # ── MINIO (Datalake) ──────────────────────────────────────────────────────
   minio:
-    image: minio/minio:latest
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
     container_name: minio
     restart: always
     ports:
@@ -167,15 +165,15 @@ services:
     depends_on:
       - minio
 
-  # ── OCR SERVICE (optionnel, fallback local dispo) ─────────────────────────
+  # ── OCR SERVICE ──────────────────────────────────────────────────────────
   ocr-service:
     container_name: ocr-service
     build:
       context: ./ocr-app
       dockerfile: Dockerfile
-    command: ["sleep", "infinity"] 
-    volumes:
-      - .:/app
+    command: ["sh", "-c", "PYTHONPATH=/app/app python ocr_server.py"]
+    ports:
+      - "8002:8002"
     networks:
       - hackathon-net
     restart: always
@@ -183,7 +181,7 @@ services:
 volumes:
   postgres_data:
   minio_data:
-
+  
 networks:
   hackathon-net:
     driver: bridge

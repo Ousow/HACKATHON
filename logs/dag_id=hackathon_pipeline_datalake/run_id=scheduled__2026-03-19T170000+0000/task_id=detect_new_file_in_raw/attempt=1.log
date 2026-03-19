@@ -1,0 +1,19 @@
+[2026-03-19T17:05:00.289+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2026-03-19T17:05:00.316+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: hackathon_pipeline_datalake.detect_new_file_in_raw scheduled__2026-03-19T17:00:00+00:00 [queued]>
+[2026-03-19T17:05:00.323+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: hackathon_pipeline_datalake.detect_new_file_in_raw scheduled__2026-03-19T17:00:00+00:00 [queued]>
+[2026-03-19T17:05:00.325+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 3
+[2026-03-19T17:05:00.339+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): detect_new_file_in_raw> on 2026-03-19 17:00:00+00:00
+[2026-03-19T17:05:00.347+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:61 DeprecationWarning: This process (pid=6417) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2026-03-19T17:05:00.346+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'hackathon_pipeline_datalake', 'detect_new_file_in_raw', 'scheduled__2026-03-19T17:00:00+00:00', '--job-id', '274', '--raw', '--subdir', 'DAGS_FOLDER/pipeline_dag.py', '--cfg-path', '/tmp/tmpu59yeg3k']
+[2026-03-19T17:05:00.349+0000] {standard_task_runner.py:63} INFO - Started process 6418 to run task
+[2026-03-19T17:05:00.349+0000] {standard_task_runner.py:91} INFO - Job 274: Subtask detect_new_file_in_raw
+[2026-03-19T17:05:00.400+0000] {task_command.py:426} INFO - Running <TaskInstance: hackathon_pipeline_datalake.detect_new_file_in_raw scheduled__2026-03-19T17:00:00+00:00 [running]> on host ca89a4540bc5
+[2026-03-19T17:05:00.474+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='data-team' AIRFLOW_CTX_DAG_ID='hackathon_pipeline_datalake' AIRFLOW_CTX_TASK_ID='detect_new_file_in_raw' AIRFLOW_CTX_EXECUTION_DATE='2026-03-19T17:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2026-03-19T17:00:00+00:00'
+[2026-03-19T17:05:00.475+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2026-03-19T17:05:00.647+0000] {pipeline_dag.py:139} INFO - [DETECT] Nouvel objet détecté : 2026-03-16/test/attestation_expiree_0241/attestation_urssaf.pdf
+[2026-03-19T17:05:00.684+0000] {python.py:237} INFO - Done. Returned value was: None
+[2026-03-19T17:05:00.685+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2026-03-19T17:05:00.694+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=hackathon_pipeline_datalake, task_id=detect_new_file_in_raw, run_id=scheduled__2026-03-19T17:00:00+00:00, execution_date=20260319T170000, start_date=20260319T170500, end_date=20260319T170500
+[2026-03-19T17:05:00.724+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 0
+[2026-03-19T17:05:00.751+0000] {taskinstance.py:3498} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2026-03-19T17:05:00.754+0000] {local_task_job_runner.py:222} INFO - ::endgroup::
