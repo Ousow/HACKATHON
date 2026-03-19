@@ -1,5 +1,4 @@
 """
-API REST FastAPI pour le service de validation intelligent.
 
 Endpoints:
 - POST /validate : Valider un dossier fournisseur

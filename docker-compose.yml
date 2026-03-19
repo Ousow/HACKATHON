@@ -1,0 +1,58 @@
+services:
+
+  # ~~backend Flask : reçoit les fichiers et lance l OCR
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    ports:
+      - "5000:5000"
+    networks:
+      - hackathon-net
+
+  # ~~front React : interface utilisateur
+  front:
+    build:
+      context: .
+      dockerfile: Dockerfile.front
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    networks:
+      - hackathon-net
+
+  # ~~module OCR standalone (existant)
+  ocr-app:
+    build:
+      context: ./ocr-app
+      dockerfile: Dockerfile
+    networks:
+      - hackathon-net
+
+  # ~~service de validation (existant)
+  validation-service:
+    build:
+      context: ./validation-service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    networks:
+      - hackathon-net
+
+  # ~~pipeline d orchestration (existant)
+  pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile.pipeline
+    environment:
+      - VALIDATION_SERVICE_URL=http://validation-service:8001
+      - MINIO_ENDPOINT=minio:9000
+    depends_on:
+      - validation-service
+    networks:
+      - hackathon-net
+
+networks:
+  hackathon-net:
+    driver: bridge
