@@ -155,7 +155,6 @@ def extract_siret(text: str) -> Dict[str, Any]:
             "all_candidates": candidates,
             "invalid_candidates": invalid_candidates,
             "confidence": 0.95,
-            "source": "regex"
         }
 
     return {
@@ -163,7 +162,6 @@ def extract_siret(text: str) -> Dict[str, Any]:
         "all_candidates": [],
         "invalid_candidates": invalid_candidates,
         "confidence": 0.0,
-        "source": None
     }
 
 
@@ -186,13 +184,12 @@ def extract_tva(text: str) -> Dict[str, Any]:
     matches = list(dict.fromkeys(matches))
 
     if not matches:
-        return {"value": None, "all_candidates": [], "confidence": 0.0, "source": None}
+        return {"value": None, "all_candidates": [], "confidence": 0.0}
 
     return {
         "value": matches[0],
         "all_candidates": matches,
         "confidence": 0.92,
-        "source": "regex"
     }
 
 
@@ -203,8 +200,8 @@ def extract_iban_bic(text: str) -> Dict[str, Dict[str, Any]]:
     BIC: 8 ou 11 caractères
     """
     results = {
-        "iban": {"value": None, "confidence": 0.0, "source": None},
-        "bic": {"value": None, "confidence": 0.0, "source": None},
+        "iban": {"value": None, "confidence": 0.0},
+        "bic": {"value": None, "confidence": 0.0},
     }
 
     # IBAN français: FR + 2 chiffres + 23 caractères
@@ -218,7 +215,6 @@ def extract_iban_bic(text: str) -> Dict[str, Dict[str, Any]]:
             "value": iban_clean,
             "all_candidates": [re.sub(r"\s+", "", m).upper() for m in iban_matches],
             "confidence": 0.90,
-            "source": "regex"
         }
 
     # BIC: 8 ou 11 caractères alphanumériques
@@ -230,7 +226,6 @@ def extract_iban_bic(text: str) -> Dict[str, Dict[str, Any]]:
             "value": bic_matches[0].upper(),
             "all_candidates": [m.upper() for m in bic_matches],
             "confidence": 0.88,
-            "source": "regex"
         }
 
     return results
@@ -241,9 +236,9 @@ def extract_amount_by_labels(text: str) -> Dict[str, Dict[str, Any]]:
     Cherche des montants proches de labels : HT, TTC, TVA.
     """
     results = {
-        "montant_ht": {"value": None, "confidence": 0.0, "source": None},
-        "montant_ttc": {"value": None, "confidence": 0.0, "source": None},
-        "montant_tva": {"value": None, "confidence": 0.0, "source": None},
+        "montant_ht": {"value": None, "confidence": 0.0},
+        "montant_ttc": {"value": None, "confidence": 0.0},
+        "montant_tva": {"value": None, "confidence": 0.0},
     }
 
     amount_pattern = r"(\d{1,3}(?:[ ,.]\d{3})*(?:[.,]\d{2})|\d+(?:[.,]\d{2}))"
@@ -277,9 +272,7 @@ def extract_amount_by_labels(text: str) -> Dict[str, Dict[str, Any]]:
             results[field] = {
                 "value": candidates[-1],
                 "all_candidates": candidates,
-                "currency": "EUR",
                 "confidence": 0.88,
-                "source": "regex_label"
             }
 
     return results
@@ -291,8 +284,8 @@ def extract_dates(text: str) -> Dict[str, Dict[str, Any]]:
     Garde séparément date_expiration.
     """
     results = {
-        "date_emission": {"value": None, "confidence": 0.0, "source": None},
-        "date_expiration": {"value": None, "confidence": 0.0, "source": None},
+        "date_emission": {"value": None, "confidence": 0.0},
+        "date_expiration": {"value": None, "confidence": 0.0},
     }
 
     date_expr = (
@@ -324,7 +317,6 @@ def extract_dates(text: str) -> Dict[str, Dict[str, Any]]:
                 results["date_emission"] = {
                     "value": iso,
                     "confidence": 0.85,
-                    "source": "regex_date_context"
                 }
                 break
 
@@ -336,7 +328,6 @@ def extract_dates(text: str) -> Dict[str, Dict[str, Any]]:
                 results["date_expiration"] = {
                     "value": iso,
                     "confidence": 0.85,
-                    "source": "regex_date_context"
                 }
                 break
 

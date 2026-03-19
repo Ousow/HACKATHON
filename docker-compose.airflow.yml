@@ -167,7 +167,6 @@ services:
     depends_on:
       - minio
 
-  # ── OCR SERVICE (optionnel, fallback local dispo) ─────────────────────────
   ocr-service:
     container_name: ocr-service
     build:
