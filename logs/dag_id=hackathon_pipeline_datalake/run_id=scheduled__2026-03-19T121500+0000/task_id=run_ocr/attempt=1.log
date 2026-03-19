@@ -1,0 +1,124 @@
+[2026-03-19T12:20:02.802+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2026-03-19T12:20:02.833+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: hackathon_pipeline_datalake.run_ocr scheduled__2026-03-19T12:15:00+00:00 [queued]>
+[2026-03-19T12:20:02.842+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: hackathon_pipeline_datalake.run_ocr scheduled__2026-03-19T12:15:00+00:00 [queued]>
+[2026-03-19T12:20:02.844+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 2
+[2026-03-19T12:20:02.856+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): run_ocr> on 2026-03-19 12:15:00+00:00
+[2026-03-19T12:20:02.866+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:61 DeprecationWarning: This process (pid=1207) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2026-03-19T12:20:02.865+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'hackathon_pipeline_datalake', 'run_ocr', 'scheduled__2026-03-19T12:15:00+00:00', '--job-id', '48', '--raw', '--subdir', 'DAGS_FOLDER/pipeline_dag.py', '--cfg-path', '/tmp/tmp1y215ea7']
+[2026-03-19T12:20:02.868+0000] {standard_task_runner.py:63} INFO - Started process 1208 to run task
+[2026-03-19T12:20:02.869+0000] {standard_task_runner.py:91} INFO - Job 48: Subtask run_ocr
+[2026-03-19T12:20:02.928+0000] {task_command.py:426} INFO - Running <TaskInstance: hackathon_pipeline_datalake.run_ocr scheduled__2026-03-19T12:15:00+00:00 [running]> on host ca89a4540bc5
+[2026-03-19T12:20:03.016+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='data-team' AIRFLOW_CTX_DAG_ID='hackathon_pipeline_datalake' AIRFLOW_CTX_TASK_ID='run_ocr' AIRFLOW_CTX_EXECUTION_DATE='2026-03-19T12:15:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='scheduled__2026-03-19T12:15:00+00:00'
+[2026-03-19T12:20:03.018+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2026-03-19T12:20:03.203+0000] {pipeline_dag.py:207} WARNING - [OCR] Service HTTP indisponible ([Errno 111] Connection refused), basculement sur OCR local...
+[2026-03-19T12:20:03.876+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2026-03-19T12:20:03.878+0000] {taskinstance.py:2905} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/httpx/_transports/default.py", line 67, in map_httpcore_exceptions
+    yield
+  File "/home/airflow/.local/lib/python3.12/site-packages/httpx/_transports/default.py", line 231, in handle_request
+    resp = self._pool.handle_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "/home/airflow/.local/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/httpcore/_sync/connection.py", line 101, in handle_request
+    raise exc
+  File "/home/airflow/.local/lib/python3.12/site-packages/httpcore/_sync/connection.py", line 78, in handle_request
+    stream = self._connect(request)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/httpcore/_sync/connection.py", line 124, in _connect
+    stream = self._network_backend.connect_tcp(**kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/httpcore/_backends/sync.py", line 207, in connect_tcp
+    with map_exceptions(exc_map):
+  File "/usr/local/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/home/airflow/.local/lib/python3.12/site-packages/httpcore/_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ConnectError: [Errno 111] Connection refused
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/airflow/dags/pipeline_dag.py", line 195, in run_ocr
+    resp = httpx.post(
+           ^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/httpx/_api.py", line 317, in post
+    return request(
+           ^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/httpx/_api.py", line 104, in request
+    return client.request(
+           ^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/httpx/_client.py", line 828, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/httpx/_client.py", line 915, in send
+    response = self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/httpx/_client.py", line 943, in _send_handling_auth
+    response = self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/httpx/_client.py", line 980, in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/httpx/_client.py", line 1016, in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/httpx/_transports/default.py", line 230, in handle_request
+    with map_httpcore_exceptions():
+  File "/usr/local/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/home/airflow/.local/lib/python3.12/site-packages/httpx/_transports/default.py", line 84, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ConnectError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/pdf2image/pdf2image.py", line 581, in pdfinfo_from_path
+    proc = Popen(command, env=env, stdout=PIPE, stderr=PIPE)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/subprocess.py", line 1026, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "/usr/local/lib/python3.12/subprocess.py", line 1955, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+PermissionError: [Errno 13] Permission denied: 'pdfinfo'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 465, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/taskinstance.py", line 432, in _execute_callable
+    return execute_callable(context=context, **execute_callable_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/models/baseoperator.py", line 400, in wrapper
+    return func(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 235, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/airflow/operators/python.py", line 252, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/pipeline_dag.py", line 217, in run_ocr
+    ocr_text      = extract_text_from_pdf(Path(local_path))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/ocr-app/app/ocr_runner.py", line 30, in extract_text_from_pdf
+    pages = convert_from_path(pdf_path, dpi=300)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pdf2image/pdf2image.py", line 127, in convert_from_path
+    page_count = pdfinfo_from_path(
+                 ^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.12/site-packages/pdf2image/pdf2image.py", line 607, in pdfinfo_from_path
+    raise PDFInfoNotInstalledError(
+pdf2image.exceptions.PDFInfoNotInstalledError: Unable to get page count. Is poppler installed and in PATH?
+[2026-03-19T12:20:03.912+0000] {taskinstance.py:1206} INFO - Marking task as UP_FOR_RETRY. dag_id=hackathon_pipeline_datalake, task_id=run_ocr, run_id=scheduled__2026-03-19T12:15:00+00:00, execution_date=20260319T121500, start_date=20260319T122002, end_date=20260319T122003
+[2026-03-19T12:20:03.929+0000] {standard_task_runner.py:110} ERROR - Failed to execute job 48 for task run_ocr (Unable to get page count. Is poppler installed and in PATH?; 1208)
+[2026-03-19T12:20:03.982+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 1
+[2026-03-19T12:20:04.009+0000] {taskinstance.py:3498} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2026-03-19T12:20:04.012+0000] {local_task_job_runner.py:222} INFO - ::endgroup::
