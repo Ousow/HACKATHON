@@ -1,6 +1,5 @@
 """
 Modèle de Machine Learning pour la détection d'anomalies.
-Utilise Isolation Forest pour identifier les dossiers suspects.
 """
 
 import numpy as np
@@ -42,7 +41,7 @@ class AnomalyDetector:
     
     def __init__(
         self,
-        contamination: float = 0.1,  # 10% d'anomalies attendues
+        contamination: float = 0.1,  
         random_state: int = 42,
         model_path: Optional[str] = None
     ):
@@ -63,7 +62,6 @@ class AnomalyDetector:
         self.is_trained = False
         self.feature_names = []
         
-        # Charger le modèle s'il existe
         if model_path and Path(model_path).exists():
             self.load_model(model_path)
     
@@ -76,21 +74,21 @@ class AnomalyDetector:
         """
         features = {}
         
-        # Features liées à la facture
+        
         if dossier.facture:
             f = dossier.facture
             
-            # Ratios de montants
+            
             if f.montant_ht > 0:
                 features["ratio_tva_ht"] = f.montant_tva / f.montant_ht
                 features["ratio_ttc_ht"] = f.montant_ttc / f.montant_ht
                 
-                # Écart TVA
+                
                 tva_calculee = f.montant_ht * f.taux_tva
                 features["ecart_tva_abs"] = abs(f.montant_tva - tva_calculee)
                 features["ecart_tva_pct"] = abs(f.montant_tva - tva_calculee) / f.montant_ht
                 
-                # Écart TTC
+                
                 ttc_calcule = f.montant_ht + f.montant_tva
                 features["ecart_ttc_abs"] = abs(f.montant_ttc - ttc_calcule)
                 features["ecart_ttc_pct"] = abs(f.montant_ttc - ttc_calcule) / f.montant_ht
@@ -102,19 +100,19 @@ class AnomalyDetector:
                 features["ecart_ttc_abs"] = 0
                 features["ecart_ttc_pct"] = 0
             
-            # Taux TVA
+            
             features["taux_tva"] = f.taux_tva
             
-            # Délai de paiement
+            
             if f.date_echeance:
                 features["delai_paiement_jours"] = (f.date_echeance - f.date_emission).days
             else:
-                features["delai_paiement_jours"] = 30  # Valeur par défaut
+                features["delai_paiement_jours"] = 30  
             
-            # Montant (log pour normaliser)
+            
             features["log_montant_ttc"] = np.log1p(f.montant_ttc)
         else:
-            # Valeurs par défaut si pas de facture
+            
             features["ratio_tva_ht"] = 0.2
             features["ratio_ttc_ht"] = 1.2
             features["ecart_tva_abs"] = 0
